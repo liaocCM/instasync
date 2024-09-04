@@ -1,0 +1,41 @@
+{
+  "private": true,
+  "name": "@instasync/shared",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "scripts": {
+    "build": "tsc && tsc -p tsconfig.esm.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.5.2"
+  },
+  "exports": {
+    ".": {
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js"
+    },
+    "./utils": {
+      "require": "./dist/cjs/utils.js",
+      "import": "./dist/esm/utils.js"
+    },
+    "./constants": {
+      "require": "./dist/cjs/constants.js",
+      "import": "./dist/esm/constants.js"
+    },
+    "./types": {
+      "require": "./dist/cjs/types/index.js",
+      "import": "./dist/esm/types/index.js"
+    }
+  }
+}

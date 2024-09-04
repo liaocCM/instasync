@@ -1,0 +1,52 @@
+{
+  "name": "@instasync/client",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "rm -rf dist && vite build",
+    "strict-build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@instasync/bulletjs": "workspace:^",
+    "@instasync/config-ts": "workspace:^",
+    "@instasync/shared": "workspace:^",
+    "@instasync/ui": "workspace:^",
+    "@tanstack/react-query": "^5.52.2",
+    "axios": "^1.7.4",
+    "dayjs": "^1.11.13",
+    "lucide-react": "^0.429.0",
+    "qrcode.react": "^4.0.1",
+    "react": "^18.3.1",
+    "react-advanced-cropper": "^0.20.0",
+    "react-dom": "^18.3.1",
+    "react-lottie": "^1.2.4",
+    "react-router-dom": "^6.26.1",
+    "react-textfit": "^1.1.1",
+    "swiper": "^11.1.10",
+    "uuid": "^10.0.0",
+    "video.js": "^8.17.3",
+    "zustand": "^4.5.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@types/react-lottie": "^1.2.10",
+    "@types/react-textfit": "^1.1.4",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.9.0",
+    "eslint-plugin-react-hooks": "^5.1.0-rc.0",
+    "eslint-plugin-react-refresh": "^0.4.9",
+    "globals": "^15.9.0",
+    "postcss": "^8.4.41",
+    "tailwindcss": "^3.4.10",
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^8.0.1",
+    "vite": "^5.4.1"
+  }
+}

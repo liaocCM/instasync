@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <script>
+        var ws = new WebSocket('ws://localhost:8080/websocket/?token=<your_token>');
+        ws.onopen = function() {
+            console.log('WebSocket connection opened');
+        };
+        ws.onmessage = function(event) {
+            console.log('Message from server ', event.data);
+        };
+        ws.onerror = function(error) {
+            console.log('WebSocket Error ', error);
+        };
+        ws.onclose = function() {
+            console.log('WebSocket connection closed');
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "@instasync/config-ts",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "exports": {
+    ".": "./tsconfig.json"
+  }
+}

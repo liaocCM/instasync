@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CommentType {
+  VIDEO
+  PHOTO
+}
+
+enum RoomMode {
+  VIDEO
+  PHOTO
+  MIXED
+}
+
+model User {
+  id             String    @id @default(nanoid())
+  name           String
+  roles          Json      @default("[]")
+  banned         Boolean   @default(false)
+  profilePicture String?   @map("profile_picture")
+  comments       Comment[]
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Comment {
+  id        String        @id @default(nanoid())
+  user      User          @relation(fields: [userId], references: [id])
+  userId    String        @map("user_id")
+  roomId    String
+  room      Room          @relation(fields: [roomId], references: [id])
+  content   String
+  type      CommentType   @default(VIDEO)
+  color     String?
+  photoUrl  String?       @map("photo_url")
+  status    CommentStatus @default(PENDING)
+  hidden    Boolean       @default(false)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  @@map("comments")
+}
+
+model Room {
+  id                 String    @id @default(nanoid())
+  mode               RoomMode  @default(VIDEO)
+  isDefault          Boolean   @default(false) @map("is_default")
+  requiresModeration Boolean   @default(false) @map("requires_moderation")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+  comments           Comment[]
+
+  @@map("rooms")
+}

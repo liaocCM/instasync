@@ -11,7 +11,7 @@ import {
 } from '@instasync/shared';
 // import { Button } from '@instasync/ui/ui/button';
 import { Input } from '@instasync/ui/ui/input';
-import { ChevronsDown, SendHorizontal } from 'lucide-react';
+import { ChevronsDown, SendHorizontal, TriangleAlert } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { ScrollArea } from '@instasync/ui/ui/scroll-area';
 import { debounce } from '@/lib/utils';
@@ -21,6 +21,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { API_QUERY_KEYS, API_SERVICES } from '@/lib/api';
 import { useGlobalStore } from '@/store/globalStore';
 import { toast } from '@instasync/ui/ui/sonner';
+import { useRateLimiter } from '@/lib/hook';
 
 const WELCOME_COMMENT = {
   id: '-',
@@ -39,9 +40,19 @@ export const Chatroom: React.FC<{
 }> = ({ className = '', prefetchCommentsize = 20 }) => {
   const [inputMessage, setInputMessage] = useState('');
   const [isAtBottom, setIsAtBottom] = useState(true);
+  const [isRateLimitReached, setIsRateLimitReached] = useState(false);
+  const [displayComments, setDisplayComments] = useState<DisplayComment[]>([
+    WELCOME_COMMENT
+  ]);
+
+  const [wasFocused, setWasFocused] = useState(false);
+  const clearFocusTimeout = useRef<number | null>(null);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const checkRateLimit = useRateLimiter(2, 5000);
 
   const queryClient = useQueryClient();
-
   const { data: prevComments } = useQuery({
     queryKey: API_QUERY_KEYS.comment.filter({
       type: RoomMode.VIDEO,
@@ -55,9 +66,18 @@ export const Chatroom: React.FC<{
     staleTime: 5 * 1000
   });
 
-  const [displayComments, setDisplayComments] = useState<DisplayComment[]>([
-    WELCOME_COMMENT
-  ]);
+  const currentUser = useUserStore((state) => state.user);
+  const room = useGlobalStore((state) => state.room);
+  const { subscribeWSMessage } = useWebSocketStore(
+    useShallow((state) => ({
+      sendMessage: state.sendMessage,
+      subscribeWSMessage: state.subscribe
+    }))
+  );
+
+  const { mutate: createComment, isPending } = useMutation({
+    mutationFn: API_SERVICES.createComment
+  });
 
   useEffect(() => {
     if (displayComments.length === 1) {
@@ -74,22 +94,6 @@ export const Chatroom: React.FC<{
     scrollToBottom();
   }, [prevComments, displayComments]);
 
-  const inputRef = useRef<HTMLInputElement>(null);
-  const chatContainerRef = useRef<HTMLDivElement>(null);
-
-  const currentUser = useUserStore((state) => state.user);
-  const room = useGlobalStore((state) => state.room);
-  const { subscribeWSMessage } = useWebSocketStore(
-    useShallow((state) => ({
-      sendMessage: state.sendMessage,
-      subscribeWSMessage: state.subscribe
-    }))
-  );
-
-  const { mutate: createComment, isPending } = useMutation({
-    mutationFn: API_SERVICES.createComment
-  });
-
   const scrollToBottom = () => {
     setTimeout(() =>
       chatContainerRef.current?.scrollTo({
@@ -100,23 +104,34 @@ export const Chatroom: React.FC<{
       100;
   };
 
-  const [messageCount, setMessageCount] = useState(0);
-  const [lastResetTime, setLastResetTime] = useState(Date.now());
-  const MESSAGE_LIMIT = 5;
-  const RESET_INTERVAL = 10000; // 10 seconds
-
-  const handleSendMessage = (e: any) => {
+  const handleSendMessage = (
+    e:
+      | React.KeyboardEvent<HTMLInputElement>
+      | React.MouseEvent<HTMLDivElement, MouseEvent>,
+    fromClick: boolean = false
+  ) => {
     e.stopPropagation();
     if (!inputMessage) return;
-
-    const now = Date.now();
-    if (now - lastResetTime >= RESET_INTERVAL) {
-      setMessageCount(0);
-      setLastResetTime(now);
+    if (inputMessage.length > 20) {
+      toast.warning('訊息長度不可超過20個字...');
+      return;
     }
 
-    if (messageCount >= MESSAGE_LIMIT) {
-      toast.warning('您傳送訊息的速度過快，請稍後再試');
+    // Use setTimeout to refocus after the click event has finished processing
+    if (fromClick && wasFocused) {
+      inputRef.current?.focus();
+      setWasFocused(true);
+      if (clearFocusTimeout.current) {
+        clearTimeout(clearFocusTimeout.current);
+      }
+    }
+
+    if (!checkRateLimit()) {
+      // toast.warning('您傳送訊息的速度過快，請稍後再試');
+      setIsRateLimitReached(true);
+      setTimeout(() => {
+        setIsRateLimitReached(false);
+      }, 2500);
       return;
     }
 
@@ -127,16 +142,13 @@ export const Chatroom: React.FC<{
       roomId: room?.id ?? ''
     });
 
-    setMessageCount((prevCount) => prevCount + 1);
+    setInputMessage('');
+
+    setTimeout(() => {
+      scrollToBottom();
+    }, 100);
   };
 
-  // setInputMessage('');
-  // if (document.activeElement === inputRef.current) {
-  // inputRef.current?.focus();
-  // }
-  // setTimeout(() => {
-  //   scrollToBottom();
-  // }, 100);
   const onReceiveWebSocketMessage = (message: WebSocketMessageData) => {
     switch (message.type) {
       case WebSocketActionType.ADD_COMMENT:
@@ -154,7 +166,6 @@ export const Chatroom: React.FC<{
               }
             ];
           });
-
           const container = chatContainerRef.current;
           if (container) {
             const isAtBottom =
@@ -217,6 +228,25 @@ export const Chatroom: React.FC<{
     };
   }, []);
 
+  // Add focus and blur event listeners to track the delayed focus state
+  // for fixing the issue on mobile browser
+  useEffect(() => {
+    const inputElement = inputRef.current;
+    const handleFocus = () => setWasFocused(true);
+    const handleBlur = () => {
+      clearFocusTimeout.current = setTimeout(() => {
+        setWasFocused(false);
+      }, 100);
+    };
+    inputElement?.addEventListener('focus', handleFocus);
+    inputElement?.addEventListener('blur', handleBlur);
+
+    return () => {
+      inputElement?.removeEventListener('focus', handleFocus);
+      inputElement?.removeEventListener('blur', handleBlur);
+    };
+  }, []);
+
   return (
     <div className={cn('flex-1 flex flex-col', className)}>
       {/* Message Container */}
@@ -238,13 +268,31 @@ export const Chatroom: React.FC<{
           onClick={scrollToBottom}
         >
           <div className="flex flex-row gap-1 items-center">
-            查看最新訊息 <ChevronsDown className="w-4 h-4" />
+            查看最新訊息{' '}
+            <ChevronsDown className="w-4 h-4 animate-chevron-down" />
           </div>
         </div>
       </ScrollArea>
       {/* Input Area */}
-      <div className="p-3">
-        <div className="flex flex-row gap-2 items-center relative">
+      <div
+        className={cn(
+          'p-3 transition-[padding] duration-300 ease-in-out relative border-t border-gray-200',
+          isRateLimitReached && 'pt-8'
+        )}
+      >
+        <div
+          className={cn(
+            'text-xs text-gray-500 flex flex-row gap-1 items-center whitespace-nowrap',
+            'absolute left-1/2 -translate-x-1/2 top-2',
+            'transition-[opacity] duration-300 ease-in-out',
+            isRateLimitReached ? 'opacity-100 pointer-events-none' : 'opacity-0'
+          )}
+        >
+          <TriangleAlert className="w-3 h-3 mt-[0rem]" />
+          您傳送訊息的速度過快，請稍後再試
+        </div>
+
+        <div className={cn('flex flex-row gap-2 relative items-center')}>
           <Input
             ref={inputRef}
             className={cn(
@@ -252,47 +300,33 @@ export const Chatroom: React.FC<{
               'transition-[width] duration-200 ease-in-out'
             )}
             style={{
-              width: inputMessage ? 'calc(100% - 2.5rem)' : '100%'
+              width: wasFocused || inputMessage ? 'calc(100% - 2.5rem)' : '100%'
             }}
             placeholder="請輸入訊息"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
-            maxLength={45}
+            maxLength={20}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 handleSendMessage(e);
               }
             }}
           />
-
-          <SendHorizontal
-            onClick={(e) => handleSendMessage(e)}
+          {/* Send Button */}
+          <div
             className={cn(
-              'w-4 h-4 transition-all duration-300 text-primary absolute right-2 cursor-pointer',
-              !inputMessage
-                ? 'opacity-0 pointer-events-none translate-x-2 translate-y-2'
-                : 'opacity-100 translate-x-0 translate-y-0'
+              'p-2 pr-3 transition-all duration-400 text-primary absolute top-1/2 -translate-y-1/2 -right-1.5 cursor-pointer',
+              wasFocused || inputMessage
+                ? 'opacity-100 translate-x-0'
+                : 'opacity-0 pointer-events-none translate-x-2',
+              'active:scale-75 '
             )}
-          />
-
-          {/* <Button
-            className={cn(
-              'h-7 transition-all duration-300 absolute right-0',
-              !message ? 'opacity-0 pointer-events-none' : 'opacity-100'
-            )}
-            variant="ghost"
-            size="icon"
-            onClick={(e) => handleSendMessage(e)}
-            // disabled={!message}
+            onClick={(e) => {
+              handleSendMessage(e, true);
+            }}
           >
-            <SendHorizontal
-              onClick={(e) => handleSendMessage(e)}
-              className={cn(
-                'w-4 h-4 transition-all duration-300 text-primary',
-                // message ? '-rotate-[30deg]' : 'rotate-0'
-              )}
-            />
-          </Button> */}
+            <SendHorizontal className="w-5 h-5" />
+          </div>
         </div>
       </div>
     </div>

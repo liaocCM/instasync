@@ -5,7 +5,7 @@ interface WebSocketStore {
   socket: WebSocket | null;
   isConnected: boolean;
   messageListeners: ((message: WebSocketMessageData) => void)[];
-  connect: (url: string) => Promise<void>;
+  connect: (url?: string) => Promise<void>;
   disconnect: () => void;
   sendMessage: (message: string | WebSocketMessageData) => void;
   subscribe: (listener: (message: WebSocketMessageData) => void) => () => void;
@@ -46,7 +46,7 @@ const useWebSocketStore = create<WebSocketStore>((set, get) => ({
   messageListeners: [],
   pingInterval: null,
 
-  connect: (userToken) => {
+  connect: (userToken = '') => {
     get().disconnect();
     return new Promise<void>((resolve, reject) => {
       const socket = new WebSocket(`${websocketUrl}?token=${userToken}`);
@@ -54,13 +54,16 @@ const useWebSocketStore = create<WebSocketStore>((set, get) => ({
       socket.onopen = () => {
         console.log('WebSocket connected');
         set({ isConnected: true, socket });
-        get().startPinging();
+        // get().startPinging();
         resolve();
       };
 
       socket.onclose = () => {
         console.log('WebSocket disconnected');
-        set({ isConnected: false, socket: null });
+        set({ isConnected: false }); // socket: null
+
+        console.log('WebSocket reconnecting');
+        get().connect(userToken);
       };
 
       socket.onerror = (error) => {
@@ -92,8 +95,8 @@ const useWebSocketStore = create<WebSocketStore>((set, get) => ({
   },
 
   disconnect: () => {
-    const { socket, stopPinging } = get();
-    stopPinging();
+    const { socket } = get();
+    // stopPinging();
     if (socket) {
       socket.close();
     }

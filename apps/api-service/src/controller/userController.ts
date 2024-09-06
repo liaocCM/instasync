@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import * as userService from "../service/userService";
+import { APIError } from "@/types";
 
 // const parseJsonFields = (obj: any, fields: string[]) => {
 //   const parsedObj = { ...obj };
@@ -76,7 +77,7 @@ export const updateUser = async (
 
     const user = await userService.getUserById(id);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      throw new APIError(404, "User not found");
     }
 
     const updatedUser = await userService.updateUser(id, {
@@ -99,11 +100,7 @@ export const updateUser = async (
     // res.json(parseJsonFields(updatedUser, ["roles"]));
     res.json(updatedUser);
   } catch (error) {
-    if (error instanceof Error && error.message === "User not found") {
-      res.status(404).json({ message: "User not found" });
-    } else {
-      next(error);
-    }
+    next(error);
   }
 };
 

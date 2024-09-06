@@ -52,3 +52,17 @@ export enum CommentStatus {
   APPROVED = "APPROVED",
   REJECTED = "REJECTED",
 }
+
+export class APIError extends Error {
+  statusCode: number;
+
+  /**
+   * @param statusCode - The HTTP status code to send in the response
+   * @param message - The error message to send in the response. This should be a user-friendly message, as it may be displayed to the user on the client side.
+   */
+  constructor(statusCode: number, message: string) {
+    super(message);
+    this.statusCode = statusCode;
+    Object.setPrototypeOf(this, APIError.prototype);
+  }
+}

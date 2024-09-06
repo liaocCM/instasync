@@ -43,7 +43,7 @@ export const getCommentById = async (id: string) => {
 export const createComment = async (
   commentData: Pick<
     IComment,
-    "userId" | "roomId" | "content" | "photoUrl" | "type" | "status"
+    "userId" | "roomId" | "content" | "photoUrl" | "type" | "status" | "color"
   >
 ) => {
   const newComment = await prisma.comment.create({
@@ -65,7 +65,7 @@ export const updateComment = async (
   id: string,
   commentData: Pick<
     IComment,
-    "userId" | "content" | "photoUrl" | "type" | "status" | "hidden"
+    "userId" | "content" | "photoUrl" | "type" | "status" | "hidden" | "color"
   >
 ) => {
   const updatedComment = await prisma.comment.update({

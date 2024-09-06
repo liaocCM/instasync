@@ -1,6 +1,7 @@
 import { User, Comment, Room } from '@instasync/shared';
 import { axiosInstance } from './requestInstances';
 import { getThumbnailUrl } from '../utils';
+import { useQuery } from '@tanstack/react-query';
 
 export const API_QUERY_KEYS = {
   comment: {
@@ -37,7 +38,9 @@ export const API_SERVICES = {
     return res.data;
   },
   createComment: async (
-    data: Pick<Comment, 'userId' | 'content' | 'type' | 'roomId'> & { photoFile?: File }
+    data: Pick<Comment, 'userId' | 'content' | 'type' | 'roomId' | 'color'> & {
+      photoFile?: File;
+    }
   ): Promise<Comment> => {
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
@@ -50,10 +53,12 @@ export const API_SERVICES = {
     });
     return res.data;
   },
-
   getComments: async (
     filter?: Partial<
-      Pick<Comment, 'userId' | 'status' | 'hidden' | 'type'> & { size: number, sortBy: string }
+      Pick<Comment, 'userId' | 'status' | 'hidden' | 'type'> & {
+        size: number;
+        sortBy: string;
+      }
     >
   ): Promise<Comment[]> => {
     const res = await axiosInstance.get<Comment[]>(
@@ -77,5 +82,19 @@ export const API_SERVICES = {
   getDefaultRoom: async (): Promise<Room> => {
     const res = await axiosInstance.get<Room[]>('/room?isDefault=true&size=1');
     return res.data[0];
+  },
+  updateRoom: async (roomId: string, data: Partial<Room>): Promise<Room> => {
+    console.log('updateRoom', roomId, data);
+    const res = await axiosInstance.put<Room>(`/room/${roomId}`, data);
+    return res.data;
+  }
+};
+
+export const API_QUERIES = {
+  useGetDefaultRoom: () => {
+    return useQuery({
+      queryKey: API_QUERY_KEYS.room.default(),
+      queryFn: API_SERVICES.getDefaultRoom
+    });
   }
 };

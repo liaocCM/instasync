@@ -66,6 +66,10 @@ body {
   -webkit-text-stroke: 0.5px currentColor;
 }
 
+.text-stroke-black-sm {
+  -webkit-text-stroke: 0.5px black;
+}
+
 .text-stroke {
   -webkit-text-stroke: 1px currentColor;
 }
@@ -89,7 +93,7 @@ body {
 
   &.custom-color {
     &::before {
-      -webkit-text-stroke: 3px currentColor;
+      -webkit-text-stroke: 2px #292828;
     }
   }
 }
@@ -177,6 +181,23 @@ body {
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
+}
+
+@property --num {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+
+#game-score {
+  transition: --num var(--duration);
+  counter-set: num var(--num);
+  font-size: 20rem;
+  font-weight: bold;
+}
+
+#game-score::after {
+  content: counter(num);
 }
 
 @media (prefers-color-scheme: light) {

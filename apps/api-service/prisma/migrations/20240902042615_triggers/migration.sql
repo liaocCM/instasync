@@ -59,20 +59,20 @@ FOR EACH ROW
 EXECUTE FUNCTION update_room_timestamp();
 
 -- Trigger to validate Room mode
-CREATE OR REPLACE FUNCTION validate_room_mode()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.mode NOT IN ('VIDEO', 'PHOTO', 'MIXED') THEN
-        RAISE EXCEPTION 'Invalid room mode. Must be VIDEO, PHOTO, or MIXED.';
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+-- CREATE OR REPLACE FUNCTION validate_room_mode()
+-- RETURNS TRIGGER AS $$
+-- BEGIN
+--     IF NEW.mode NOT IN ('VIDEO', 'PHOTO', 'MIXED') THEN
+--         RAISE EXCEPTION 'Invalid room mode. Must be VIDEO, PHOTO, or MIXED.';
+--     END IF;
+--     RETURN NEW;
+-- END;
+-- $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER validate_room_mode
-BEFORE INSERT OR UPDATE ON rooms
-FOR EACH ROW
-EXECUTE FUNCTION validate_room_mode();
+-- CREATE TRIGGER validate_room_mode
+-- BEFORE INSERT OR UPDATE ON rooms
+-- FOR EACH ROW
+-- EXECUTE FUNCTION validate_room_mode();
 
 -- Trigger to validate Comment type
 CREATE OR REPLACE FUNCTION validate_comment_type()

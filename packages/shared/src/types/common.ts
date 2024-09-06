@@ -4,8 +4,8 @@ export interface User {
   banned: boolean;
   token: string;
   roles: UserRole[];
-  // TODO: intergate with LINE login
   profilePicture: string;
+  color?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -18,10 +18,10 @@ export enum CommentType {
   VIDEO = "VIDEO",
   PHOTO = "PHOTO",
 }
+
 export enum RoomMode {
   VIDEO = "VIDEO",
   PHOTO = "PHOTO",
-  MIXED = "MIXED",
 }
 
 export enum CommentStatus {
@@ -48,7 +48,7 @@ export interface Comment {
 
 export interface Room {
   id: string;
-  mode: RoomMode;
+  enableModes: RoomMode[];
   isDefault: boolean;
   requiresModeration: boolean;
   createdAt: Date;

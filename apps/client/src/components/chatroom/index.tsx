@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { useUserStore } from '@/store/userStore';
-import useWebSocketStore from '@/store/websocketStore';
+import { ChevronsDown, SendHorizontal, TriangleAlert } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
+import dayjs from 'dayjs';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Input } from '@instasync/ui/ui/input';
+import { ScrollArea } from '@instasync/ui/ui/scroll-area';
+import { toast } from '@instasync/ui/ui/sonner';
 import {
   cn,
   RoomMode,
@@ -9,31 +14,16 @@ import {
   WebSocketMessageData,
   CommentType
 } from '@instasync/shared';
-// import { Button } from '@instasync/ui/ui/button';
-import { Input } from '@instasync/ui/ui/input';
-import { ChevronsDown, SendHorizontal, TriangleAlert } from 'lucide-react';
-import { useShallow } from 'zustand/react/shallow';
-import { ScrollArea } from '@instasync/ui/ui/scroll-area';
 import { debounce } from '@/lib/utils';
-import dayjs from 'dayjs';
-import { ChatroomComment, DisplayComment } from './ChatroomComment';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { API_QUERY_KEYS, API_SERVICES } from '@/lib/api';
-import { useGlobalStore } from '@/store/globalStore';
-import { toast } from '@instasync/ui/ui/sonner';
 import { useRateLimiter } from '@/lib/hook';
-
-const WELCOME_COMMENT = {
-  id: '-',
-  isSystem: true,
-  userId: 'SYSTEM',
-  username: 'SYSTEM',
-  content: '歡迎來到聊天室，輸入訊息來發送彈幕 :D',
-  type: CommentType.VIDEO,
-  photoUrl: '',
-  hidden: false
-};
-
+import { API_QUERIES, API_QUERY_KEYS, API_SERVICES } from '@/lib/api';
+import { WELCOME_COMMENT } from '@/lib/constants';
+import { useGlobalStore } from '@/store/globalStore';
+import { useUserStore } from '@/store/userStore';
+import useWebSocketStore from '@/store/websocketStore';
+import AnimationLoader, { AnimationVariant } from '../AnimationLoader';
+import { ChatroomComment, DisplayComment } from './ChatroomComment';
+import { ColorPicker } from './ColorPicker';
 export const Chatroom: React.FC<{
   className?: string;
   prefetchCommentsize?: number;
@@ -44,14 +34,17 @@ export const Chatroom: React.FC<{
   const [displayComments, setDisplayComments] = useState<DisplayComment[]>([
     WELCOME_COMMENT
   ]);
+  const [inputWasFocused, setInputWasFocused] = useState(false);
+  const [selectedColor, setSelectedColor] = useState('');
 
-  const [wasFocused, setWasFocused] = useState(false);
   const clearFocusTimeout = useRef<number | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const checkRateLimit = useRateLimiter(2, 5000);
 
+  const { data: room } = API_QUERIES.useGetDefaultRoom();
+  const uiRoomMode = useGlobalStore((state) => state.uiRoomMode);
   const queryClient = useQueryClient();
   const { data: prevComments } = useQuery({
     queryKey: API_QUERY_KEYS.comment.filter({
@@ -66,8 +59,11 @@ export const Chatroom: React.FC<{
     staleTime: 5 * 1000
   });
 
-  const currentUser = useUserStore((state) => state.user);
-  const room = useGlobalStore((state) => state.room);
+  const { currentUser, isUserAdmin } = useUserStore((state) => ({
+    currentUser: state.user,
+    isUserAdmin: state.computed.isAdmin
+  }));
+
   const { subscribeWSMessage } = useWebSocketStore(
     useShallow((state) => ({
       sendMessage: state.sendMessage,
@@ -75,40 +71,40 @@ export const Chatroom: React.FC<{
     }))
   );
 
-  const { mutate: createComment, isPending } = useMutation({
+  const { mutate: createComment } = useMutation({
     mutationFn: API_SERVICES.createComment
   });
 
   useEffect(() => {
-    if (displayComments.length === 1) {
-      setDisplayComments([
-        ...displayComments,
-        ...(prevComments?.map((comment) => ({
+    if (displayComments.length === 1 && prevComments) {
+      setDisplayComments((currentDisplayComments) => [
+        ...currentDisplayComments,
+        ...prevComments.map((comment) => ({
           ...comment,
           isSystem: false,
           username: comment.user.name,
-          timestamp: comment.createdAt ? +new Date(comment.createdAt) : 0
-        })) || [])
+          timestamp: comment.createdAt ? +new Date(comment.createdAt) : 0,
+          color: comment.color || '',
+          photoUrl: comment.photoUrl || '',
+          hidden: false
+        }))
       ]);
     }
     scrollToBottom();
-  }, [prevComments, displayComments]);
+  }, [prevComments]);
 
   const scrollToBottom = () => {
     setTimeout(() =>
       chatContainerRef.current?.scrollTo({
         top: chatContainerRef.current.scrollHeight,
         behavior: 'smooth'
-      })
-    ),
-      100;
+      }), 200);
   };
 
   const handleSendMessage = (
     e:
       | React.KeyboardEvent<HTMLInputElement>
-      | React.MouseEvent<HTMLDivElement, MouseEvent>,
-    fromClick: boolean = false
+      | React.MouseEvent<HTMLDivElement, MouseEvent>
   ) => {
     e.stopPropagation();
     if (!inputMessage) return;
@@ -118,15 +114,15 @@ export const Chatroom: React.FC<{
     }
 
     // Use setTimeout to refocus after the click event has finished processing
-    if (fromClick && wasFocused) {
+    if (inputWasFocused) {
       inputRef.current?.focus();
-      setWasFocused(true);
+      setInputWasFocused(true);
       if (clearFocusTimeout.current) {
         clearTimeout(clearFocusTimeout.current);
       }
     }
 
-    if (!checkRateLimit()) {
+    if (!checkRateLimit() && !isUserAdmin) {
       // toast.warning('您傳送訊息的速度過快，請稍後再試');
       setIsRateLimitReached(true);
       setTimeout(() => {
@@ -139,7 +135,8 @@ export const Chatroom: React.FC<{
       userId: currentUser?.id ?? '',
       content: inputMessage.trim(),
       type: CommentType.VIDEO,
-      roomId: room?.id ?? ''
+      roomId: room?.id ?? '',
+      color: selectedColor
     });
 
     setInputMessage('');
@@ -232,10 +229,10 @@ export const Chatroom: React.FC<{
   // for fixing the issue on mobile browser
   useEffect(() => {
     const inputElement = inputRef.current;
-    const handleFocus = () => setWasFocused(true);
+    const handleFocus = () => setInputWasFocused(true);
     const handleBlur = () => {
       clearFocusTimeout.current = setTimeout(() => {
-        setWasFocused(false);
+        setInputWasFocused(false);
       }, 100);
     };
     inputElement?.addEventListener('focus', handleFocus);
@@ -247,6 +244,19 @@ export const Chatroom: React.FC<{
     };
   }, []);
 
+  if (uiRoomMode !== RoomMode.VIDEO) {
+    return null;
+  }
+
+  if (!room?.enableModes.includes(RoomMode.VIDEO) && !isUserAdmin) {
+    return (
+      <AnimationLoader
+        variant={AnimationVariant.DOG}
+        words={['聊天室還沒開放哦', '晚點再過來看看吧！']}
+      />
+    );
+  }
+
   return (
     <div className={cn('flex-1 flex flex-col', className)}>
       {/* Message Container */}
@@ -257,10 +267,10 @@ export const Chatroom: React.FC<{
         {displayComments.map((comment, index) => (
           <ChatroomComment key={index} comment={comment} />
         ))}
-
+        {/* Scroll to bottom hint */}
         <div
           className={cn(
-            'absolute bottom-3 rounded-md border border-gray-200 p-2 left-1/2 -translate-x-1/2 text-xs bg-background cursor-pointer transition-all duration-300 ease-in-out',
+            'absolute bottom-3 rounded-md border border-gray-300 p-2 left-1/2 -translate-x-1/2 text-xs bg-background cursor-pointer transition-all duration-300 ease-in-out shadow-md',
             isAtBottom
               ? 'opacity-0 pointer-events-none translate-y-2'
               : 'opacity-100 translate-y-0'
@@ -276,10 +286,11 @@ export const Chatroom: React.FC<{
       {/* Input Area */}
       <div
         className={cn(
-          'p-3 transition-[padding] duration-300 ease-in-out relative border-t border-gray-200',
+          'p-[0.625rem] transition-[padding] duration-300 ease-in-out relative border-t border-gray-200',
           isRateLimitReached && 'pt-8'
         )}
       >
+        {/* Hint Message */}
         <div
           className={cn(
             'text-xs text-gray-500 flex flex-row gap-1 items-center whitespace-nowrap',
@@ -292,15 +303,26 @@ export const Chatroom: React.FC<{
           您傳送訊息的速度過快，請稍後再試
         </div>
 
-        <div className={cn('flex flex-row gap-2 relative items-center')}>
+        <div className={cn('flex flex-row relative items-center')}>
+          {/* Color Picker */}
+          <ColorPicker
+            color={selectedColor}
+            setColor={setSelectedColor}
+            className="pr-2"
+          />
+          {/* Message Input */}
           <Input
             ref={inputRef}
             className={cn(
               'bg-gray-100 focus-visible:border-0 h-8 py-1 px-2',
-              'transition-[width] duration-200 ease-in-out'
+              'transition-[width] duration-300 ease-in-out',
+              !isUserAdmin && 'focus-visible:ring-secondary'
             )}
             style={{
-              width: wasFocused || inputMessage ? 'calc(100% - 2.5rem)' : '100%'
+              width:
+                inputWasFocused || inputMessage
+                  ? 'calc(100% - 4rem)'
+                  : 'calc(100% - 1.5rem)'
             }}
             placeholder="請輸入訊息"
             value={inputMessage}
@@ -315,17 +337,17 @@ export const Chatroom: React.FC<{
           {/* Send Button */}
           <div
             className={cn(
-              'p-2 pr-3 transition-all duration-400 text-primary absolute top-1/2 -translate-y-1/2 -right-1.5 cursor-pointer',
-              wasFocused || inputMessage
+              'p-2 pr-3 transition-all duration-350 text-primary absolute top-1/2 -translate-y-1/2 -right-1.5 cursor-pointer',
+              inputWasFocused || inputMessage
                 ? 'opacity-100 translate-x-0'
-                : 'opacity-0 pointer-events-none translate-x-2',
-              'active:scale-75 '
+                : 'opacity-0 pointer-events-none -translate-x-2',
+              'active:scale-75'
             )}
-            onClick={(e) => {
-              handleSendMessage(e, true);
-            }}
+            onClick={handleSendMessage}
           >
-            <SendHorizontal className="w-5 h-5" />
+            <SendHorizontal
+              className={cn('w-5 h-5', !isUserAdmin && 'text-secondary')}
+            />
           </div>
         </div>
       </div>

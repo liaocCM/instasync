@@ -1,4 +1,7 @@
-import { WebSocketActionType, WebSocketMessageData } from '@instasync/shared';
+import {
+  WebSocketActionType,
+  WebSocketMessageData
+} from '@instasync/shared/types';
 import { create } from 'zustand';
 
 interface WebSocketStore {
@@ -16,21 +19,14 @@ interface WebSocketStore {
 
 const handleGeneralWSMessage = (message: WebSocketMessageData) => {
   try {
-    // Handle the message based on its type
     switch (message.type) {
-      case WebSocketActionType.ADD_COMMENT:
-        const photoUrl = message.data.photoUrl;
-        if (photoUrl) {
-          // Handle the image URL
-        }
-        // Handle ADD_CONTENT message
+      case WebSocketActionType.SET_DISPLAY_MODE:
         break;
-      // Add cases for different message types
       default:
-        console.log('Unhandled message type:', message.type);
+      // console.log('Unhandled message type:', message.type);
     }
   } catch (error) {
-    console.error('Error parsing WebSocket message:', error);
+    // console.error('Error parsing WebSocket message:', error);
   }
 };
 

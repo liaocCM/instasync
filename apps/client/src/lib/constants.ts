@@ -96,3 +96,26 @@ export const SYSTEM_DEFAULT_COMMENTS: Comment[] = [
     }
   }
 ];
+
+export const VIDEO_SOURCES = [
+  {
+    label: 'Wedding Photos',
+    src: 'https://storage.googleapis.com/instasync-pics/real.mp4'
+  },
+  {
+    label: 'Summer Night',
+    src: 'https://storage.googleapis.com/instasync-pics/summer_night.mp4'
+  }
+];
+
+export const WELCOME_COMMENT = {
+  id: '-',
+  isSystem: true,
+  userId: 'SYSTEM',
+  username: 'SYSTEM',
+  content: '歡迎來到聊天室，輸入訊息來發送彈幕 :D',
+  type: CommentType.VIDEO,
+  photoUrl: '',
+  color: '',
+  hidden: false
+};

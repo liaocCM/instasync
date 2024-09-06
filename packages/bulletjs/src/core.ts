@@ -10,7 +10,8 @@ import {
 
 const defaultOptions: BulletOptions = {
   trackHeight: 50,
-  defaultTracks: [{ speed: 200 }, { speed: 300 }],
+  defaultTracks: [],
+  // defaultTracks: [{ speed: 200 }, { speed: 300 }],
   pauseOnHover: false,
   pauseOnClick: false,
   onStart: null,
@@ -180,7 +181,7 @@ export class Bullet {
 
     let duration = 0;
     const speed = options.defaultTracks?.[canIndex]?.speed || options.speed;
-    console.log("speed", speed);
+
     if (speed) {
       duration = (this.targetW + this.bulletInfo.width) / speed;
     } else {
@@ -190,10 +191,12 @@ export class Bullet {
     // 将duration作为弹幕固有属性存储
     bulletContainer.dataset.duration = duration + "";
     bulletContainer.dataset.textcontent = item;
-    bulletContainer.style.setProperty(
-      "--bullet-text-color",
-      options.color || "#fff"
-    );
+
+    const color = options.color || "#fff";
+    bulletContainer.style.setProperty("--bullet-text-color", color);
+    if (color !== "#fff" && color !== "#ffffff") {
+      bulletContainer.classList.add("custom-color");
+    }
     // 控制速度
     bulletContainer.style.animationDuration = duration * 1000 + "ms";
     // 删除临时存储弹幕容器里的弹幕

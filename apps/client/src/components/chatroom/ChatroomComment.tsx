@@ -11,6 +11,16 @@ import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { Ban, EyeOff } from 'lucide-react';
 
+const darkenColor = (color: string, amount: number): string => {
+  if (color === '' || color === '#fff' || color === '#ffffff') return '';
+  const hex = color.replace('#', '');
+  const rgb = parseInt(hex, 16);
+  const r = Math.max(0, (rgb >> 16) - Math.round(255 * amount));
+  const g = Math.max(0, ((rgb >> 8) & 0x00ff) - Math.round(255 * amount));
+  const b = Math.max(0, (rgb & 0x0000ff) - Math.round(255 * amount));
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+};
+
 export interface DisplayComment extends AddCommentData {
   isSystem: boolean;
   time?: string;
@@ -51,7 +61,10 @@ export const ChatroomComment: React.FC<{
       <b className={cn(isAdmin ? 'text-primary' : 'text-secondary')}>
         {comment.username}
       </b>
-      <span>
+      <span
+        style={{ color: darkenColor(comment.color, 0.4) }}
+        className="text-[0.8rem]"
+      >
         :{' '}
         {comment.hidden ? (
           <span className="text-[0.75rem] text-gray-400">

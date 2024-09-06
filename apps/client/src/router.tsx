@@ -14,7 +14,7 @@ export const router = createBrowserRouter([
     path: '',
     errorElement: <ErrorPage />,
     children: [
-      { index: true, element: <Navigate to="guest" replace /> },
+      { index: true, element: <Navigate to="wedding/guest" replace /> },
       {
         path: '',
         element: <ProtectedAuthRoute />,
@@ -23,7 +23,7 @@ export const router = createBrowserRouter([
             element: <AppLayout />,
             children: [
               {
-                path: 'guest',
+                path: 'wedding/guest',
                 element: <Guest />
               },
               // admin
@@ -33,18 +33,7 @@ export const router = createBrowserRouter([
                 children: [
                   {
                     path: 'app',
-                    element: <DisplayApp />,
-                    children: [
-                      // {
-                      //   index: true,
-                      //   element: <Navigate to="video-bullets" replace />
-                      // },
-                      // {
-                      //   path: 'video-bullets',
-                      //   element: <VideoBulletsPlayer />
-                      // },
-                      // { path: 'photo-wall', element: <PhotoWall /> }
-                    ]
+                    element: <DisplayApp />
                   },
                   { path: 'admin', element: <AdminControlPanel /> }
                 ]

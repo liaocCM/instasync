@@ -1,8 +1,7 @@
-import { Room, RoomMode } from '@instasync/shared';
+import { RoomMode } from '@instasync/shared';
 import { create } from 'zustand';
 
 interface GlobalState {
-  room: Room | null;
   uiRoomMode: RoomMode;
   loading: boolean;
 }
@@ -13,7 +12,6 @@ interface GlobalStore extends GlobalState {
 }
 
 export const useGlobalStore = create<GlobalStore>((set) => ({
-  room: null,
   uiRoomMode: RoomMode.VIDEO,
   loading: false,
   setState: (state) => {

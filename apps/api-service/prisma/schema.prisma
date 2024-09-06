@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
 }
 
@@ -28,18 +28,21 @@ enum CommentType {
 enum RoomMode {
   VIDEO
   PHOTO
-  MIXED
+}
+
+enum UserRole {
+  ADMIN
 }
 
 model User {
-  id             String    @id @default(nanoid())
+  id             String     @id @default(nanoid())
   name           String
-  roles          Json      @default("[]")
-  banned         Boolean   @default(false)
-  profilePicture String?   @map("profile_picture")
+  roles          UserRole[] @default([])
+  banned         Boolean    @default(false)
+  profilePicture String?    @map("profile_picture")
   comments       Comment[]
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
 
   @@map("users")
 }
@@ -63,12 +66,12 @@ model Comment {
 }
 
 model Room {
-  id                 String    @id @default(nanoid())
-  mode               RoomMode  @default(VIDEO)
-  isDefault          Boolean   @default(false) @map("is_default")
-  requiresModeration Boolean   @default(false) @map("requires_moderation")
-  createdAt          DateTime  @default(now()) @map("created_at")
-  updatedAt          DateTime  @updatedAt @map("updated_at")
+  id                 String     @id @default(nanoid())
+  enableModes        RoomMode[] @default([])
+  isDefault          Boolean    @default(false) @map("is_default")
+  requiresModeration Boolean    @default(false) @map("requires_moderation")
+  createdAt          DateTime   @default(now()) @map("created_at")
+  updatedAt          DateTime   @updatedAt @map("updated_at")
   comments           Comment[]
 
   @@map("rooms")

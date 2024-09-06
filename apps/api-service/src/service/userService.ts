@@ -1,9 +1,10 @@
 import prisma from "@/config/prisma";
-import { IUser } from "@/types";
+import { IUser, UserRole } from "@/types";
 import jwt from "jsonwebtoken";
 import { Prisma } from "@prisma/client";
 
 const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "365d";
 
 export const getUserById = async (id: string) => {
   const user = await prisma.user.findUnique({
@@ -25,16 +26,13 @@ export const createUser = async (
   }
 
   const newUser = await prisma.user.create({
-    data: {
-      ...userData,
-      roles: JSON.stringify(userData.roles || []),
-    },
+    data: userData,
   });
 
   const token = jwt.sign(
-    { userId: newUser.id, roles: JSON.parse(newUser.roles as string) },
+    { userId: newUser.id, roles: newUser.roles },
     JWT_SECRET,
-    { expiresIn: "5d" }
+    { expiresIn: JWT_EXPIRES_IN }
   );
 
   return { ...newUser, token };
@@ -43,7 +41,7 @@ export const createUser = async (
 export const updateUser = async (
   id: string,
   userData: Pick<IUser, "name" | "profilePicture" | "banned"> & {
-    roles?: string[];
+    roles?: UserRole[];
   }
 ) => {
   try {
@@ -55,17 +53,17 @@ export const updateUser = async (
       where: { id },
       data: {
         ...userData,
-        roles: userData.roles ? JSON.stringify(userData.roles) : undefined,
+        roles: userData.roles || [],
       },
     });
 
     const token = jwt.sign(
       {
         userId: updatedUser.id,
-        roles: JSON.parse(updatedUser.roles as string),
+        roles: updatedUser.roles,
       },
       JWT_SECRET,
-      { expiresIn: "360d" }
+      { expiresIn: JWT_EXPIRES_IN }
     );
 
     return { ...updatedUser, token };

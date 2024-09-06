@@ -3,16 +3,15 @@ import { Drawer, DrawerContent, DrawerTrigger } from '@instasync/ui/ui/drawer';
 import { ArrowDownUp, ImagePlus, Trash2 } from 'lucide-react';
 import { Textarea } from '@instasync/ui/ui/textarea';
 import { useRef, useState } from 'react';
-import { cn, CommentType, RoomMode } from '@instasync/shared';
+import { cn, CommentType } from '@instasync/shared';
 import { toast } from '@instasync/ui/ui/sonner';
 import {
   ImageCropper,
   ImageCropperRef
 } from '../../../components/ImageCropper';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { API_QUERY_KEYS, API_SERVICES } from '@/lib/api';
+import { API_QUERIES, API_QUERY_KEYS, API_SERVICES } from '@/lib/api';
 import { useUserStore } from '@/store/userStore';
-import { useGlobalStore } from '@/store/globalStore';
 
 const MAX_COMMENT_LENGTH = 50;
 
@@ -29,7 +28,7 @@ export const EditPhotoPostDrawer: React.FC<{
   const imageCropperRef = useRef<ImageCropperRef>(null);
 
   const currentUser = useUserStore((state) => state.user);
-  const room = useGlobalStore((state) => state.room);
+  const { data: room } = API_QUERIES.useGetDefaultRoom();
 
   const queryClient = useQueryClient();
   const { mutate: createComment, isPending } = useMutation({
@@ -41,7 +40,7 @@ export const EditPhotoPostDrawer: React.FC<{
       queryClient.invalidateQueries({
         queryKey: API_QUERY_KEYS.comment.filter({
           userId: currentUser?.id || '',
-          type: RoomMode.PHOTO
+          type: CommentType.PHOTO
         })
       });
       setOpen(false);

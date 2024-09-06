@@ -5,10 +5,10 @@ import Lottie from 'react-lottie';
 //
 import { Button } from '@instasync/ui/ui/button';
 
-import { API_QUERY_KEYS, API_SERVICES } from '@/lib/api';
+import { API_QUERIES, API_QUERY_KEYS, API_SERVICES } from '@/lib/api';
 import { useUserStore } from '@/store/userStore';
 import { EditPhotoPostDrawer } from './PhotoPostDrawer';
-import animationData from '@/assets/lottie/crying-yabi.json';
+import emptyAnimationData from '@/assets/lottie/crying-yabi.json';
 import { CommentCard } from '@/components/CommentCard';
 
 import 'swiper/css/effect-cards';
@@ -16,11 +16,15 @@ import 'swiper/css/pagination';
 import { cn, RoomMode, CommentType } from '@instasync/shared';
 import { useGlobalStore } from '@/store/globalStore';
 import { Spinner } from '@instasync/ui/ui/spinner';
+import AnimationLoader, {
+  AnimationVariant
+} from '@/components/AnimationLoader';
 
 export const PhotoPost: React.FC<{ className?: string }> = ({
   className = ''
 }) => {
-  const activeRoomMode = useGlobalStore((state) => state.uiRoomMode);
+  const uiRoomMode = useGlobalStore((state) => state.uiRoomMode);
+  const { data: serverRoom } = API_QUERIES.useGetDefaultRoom();
   const currentUser = useUserStore((state) => state.user);
 
   const { data: comments, isLoading } = useQuery({
@@ -37,8 +41,17 @@ export const PhotoPost: React.FC<{ className?: string }> = ({
   });
 
   // must return null if not in photo mode because swiperjs requires DOM elements to do calculations
-  if (activeRoomMode !== RoomMode.PHOTO) {
+  if (uiRoomMode !== RoomMode.PHOTO) {
     return null;
+  }
+
+  if (!serverRoom?.enableModes.includes(RoomMode.PHOTO)) {
+    return (
+      <AnimationLoader
+        variant={AnimationVariant.HEART}
+        words={['祝福牆還沒開放哦', '晚點再過來看看吧！']}
+      />
+    );
   }
 
   if (isLoading) {
@@ -91,7 +104,7 @@ export const PhotoPost: React.FC<{ className?: string }> = ({
               options={{
                 loop: true,
                 autoplay: true,
-                animationData: animationData,
+                animationData: emptyAnimationData,
                 rendererSettings: {
                   preserveAspectRatio: 'xMidYMid slice'
                 }

@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import * as roomService from "../service/roomService";
 import { RoomMode } from "../types";
+import { WebSocketActionType } from "@instasync/shared";
+import { pubWSMessage } from "@/config/redis";
 
 export const getAllRooms = async (
   req: Request,
@@ -8,15 +10,15 @@ export const getAllRooms = async (
   next: NextFunction
 ) => {
   try {
-    const { isDefault, mode, size, requiresModeration } = req.query;
-
+    const { isDefault, size, requiresModeration } = req.query;
+    // enableModes
     const filters = {
-      ...(mode !== undefined &&
-        Object.values(RoomMode).includes(
-          (mode as string).toUpperCase() as RoomMode
-        ) && {
-          mode: (mode as string).toUpperCase() as RoomMode,
-        }),
+      // ...(enableModes !== undefined &&
+      //   Object.values(RoomMode).includes(
+      //     (enableModes as string).toUpperCase() as RoomMode
+      //   ) && {
+      //     enableModes: (enableModes as string).toUpperCase() as RoomMode,
+      //   }),
       ...(isDefault !== undefined &&
         isDefault !== "" && {
           isDefault: isDefault === "true" || isDefault === "1",
@@ -72,6 +74,14 @@ export const updateRoom = async (
 ) => {
   try {
     const room = await roomService.updateRoom(req.params.id, req.body);
+
+    pubWSMessage({
+      type: WebSocketActionType.SET_DISPLAY_MODE,
+      data: {
+        roomId: room.id,
+        enableModes: room.enableModes as RoomMode[],
+      },
+    });
     res.json(room);
   } catch (error) {
     next(error);

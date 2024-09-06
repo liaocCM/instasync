@@ -3,12 +3,12 @@ import { IRoom, RoomMode } from "@/types";
 
 export const getAllRooms = async (
   filters?: Partial<
-    Pick<IRoom, "mode" | "isDefault" | "requiresModeration"> & { size?: number }
+    Pick<IRoom, "isDefault" | "requiresModeration"> & { size?: number }
   >
 ) => {
   const rooms = await prisma.room.findMany({
     where: {
-      mode: filters?.mode,
+      // enableModes: filters?.enableModes,
       isDefault: filters?.isDefault,
       requiresModeration: filters?.requiresModeration,
     },
@@ -25,13 +25,13 @@ export const getRoomById = async (id: string) => {
 };
 
 export const createRoom = async ({
-  mode,
+  enableModes,
   isDefault,
   requiresModeration,
-}: Pick<IRoom, "mode" | "isDefault" | "requiresModeration">) => {
+}: Pick<IRoom, "enableModes" | "isDefault" | "requiresModeration">) => {
   const room = await prisma.room.create({
     data: {
-      mode,
+      enableModes,
       isDefault,
       requiresModeration,
     },
@@ -42,7 +42,7 @@ export const createRoom = async ({
 export const createDefaultRoom = async () => {
   const room = await prisma.room.create({
     data: {
-      mode: RoomMode.VIDEO,
+      enableModes: [RoomMode.VIDEO],
       isDefault: true,
       requiresModeration: true,
     },
@@ -53,15 +53,15 @@ export const createDefaultRoom = async () => {
 export const updateRoom = async (
   id: string,
   {
-    mode,
+    enableModes,
     isDefault,
     requiresModeration,
-  }: Pick<IRoom, "mode" | "isDefault" | "requiresModeration">
+  }: Pick<IRoom, "enableModes" | "isDefault" | "requiresModeration">
 ) => {
   const room = await prisma.room.update({
     where: { id },
     data: {
-      mode,
+      enableModes,
       isDefault,
       requiresModeration,
     },

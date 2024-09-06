@@ -31,7 +31,7 @@ export interface IComment {
 
 export interface IRoom {
   id: string;
-  mode: RoomMode;
+  enableModes: RoomMode[];
   isDefault: boolean;
   requiresModeration: boolean;
   createdAt: Date;

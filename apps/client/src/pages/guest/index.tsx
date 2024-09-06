@@ -11,9 +11,8 @@ export const Guest: React.FC = () => {
   }));
 
   return (
-    <div className="flex flex-col gap-2 h-full">
+    <div className="flex flex-col gap-0 h-full">
       <UserTabHeader />
-
       <Chatroom className={cn(uiRoomMode !== RoomMode.VIDEO && 'hidden')} />
       <PhotoPost className={cn(uiRoomMode !== RoomMode.PHOTO && 'hidden')} />
     </div>

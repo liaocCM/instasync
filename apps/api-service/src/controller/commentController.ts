@@ -9,7 +9,6 @@ import { uploadFileAndGetUrl } from "../utils";
 import { CommentType, WebSocketActionType } from "@instasync/shared";
 import { pubWSMessage } from "@/config/redis";
 
-
 export const getComments = async (
   req: Request,
   res: Response,
@@ -77,7 +76,7 @@ export const createComment = async (
   next: NextFunction
 ) => {
   try {
-    const { userId, roomId, content, type, status } = req.body;
+    const { userId, roomId, content, type, status, color } = req.body;
     let photoUrl = "";
     const defaultRooms = await roomService.getAllRooms({ isDefault: true });
 
@@ -92,6 +91,7 @@ export const createComment = async (
       content,
       photoUrl,
       type,
+      color,
       // status: CommentStatus.APPROVED,
       status:
         status ||
@@ -111,6 +111,7 @@ export const createComment = async (
           content: createdComment.content,
           photoUrl: createdComment.photoUrl || "",
           hidden: createdComment.hidden,
+          color: createdComment.color,
           timestamp: Date.now(),
         },
       },

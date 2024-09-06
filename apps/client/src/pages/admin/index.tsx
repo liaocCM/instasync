@@ -11,7 +11,7 @@ export const AdminControlPanel: React.FC = () => {
   }));
 
   return (
-    <div className="flex flex-col gap-2 h-full">
+    <div className="flex flex-col gap-0 h-full">
       <UserTabHeader isAdminMode />
       <Chatroom
         className={cn(uiRoomMode !== RoomMode.VIDEO && 'hidden')}

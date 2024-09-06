@@ -166,7 +166,7 @@ export const ProtectedAuthRoute = () => {
               <div className="flex flex-row gap-4">
                 <Input
                   placeholder="暱稱"
-                  className="h-9"
+                  className="h-9 focus-visible:ring-secondary"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   onKeyDown={(e) => {
@@ -177,6 +177,7 @@ export const ProtectedAuthRoute = () => {
                 />
                 <Button
                   size="sm"
+                  variant="secondary"
                   onClick={handleCreateUser}
                   disabled={!username || username.trim().length > 10}
                 >

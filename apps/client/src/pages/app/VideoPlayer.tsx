@@ -15,18 +15,13 @@ import { VIDEO_SOURCES } from '@/lib/constants';
 import GameScore from '@/components/GameScore';
 import { Input } from '@instasync/ui/ui/input';
 
-enum DisplayMode {
-  VIDEO = 'VIDEO',
-  GAME = 'GAME'
-}
-
 export const VideoPlayer = () => {
   const sceneElRef = useRef<HTMLDivElement>(null);
   const videoElRef = useRef<HTMLVideoElement>(null);
   const screenElRef = useRef<HTMLDivElement>(null);
   const bulletInstance = useRef<Bullet | null>(null);
 
-  const [displayMode, setDisplayMode] = useState<DisplayMode>(DisplayMode.GAME);
+  const [displayGameScore, setDisplayGameScore] = useState<boolean>(false);
   const [gameScore, setGameScore] = useState<number>(0);
 
   const { toggleFullscreen } = useFullscreen(sceneElRef, () =>
@@ -57,7 +52,6 @@ export const VideoPlayer = () => {
   };
 
   const handleChangeSource = (src: string) => {
-    setDisplayMode(DisplayMode.VIDEO);
     if (videoElRef.current) {
       videoElRef.current.src = src;
       // videoElRef.current.load();
@@ -78,10 +72,10 @@ export const VideoPlayer = () => {
   const getContentSpeed = (content: string) => {
     const carEmoji = ['🚗', '🚙', '🚕', '🚚', '🚜'];
     const flightEmoji = ['✈️', '🛫', '🛬', '🛩', '💺', '🚁'];
-    const rocketEmoji = ['🚀', '🛸', '🛰', '🛶'];
+    const rocketEmoji = ['🚀', '🛸', '🛰'];
 
     if (rocketEmoji.some((emoji) => content.includes(emoji))) {
-      return 2;
+      return 1.6;
     }
     if (flightEmoji.some((emoji) => content.includes(emoji))) {
       return 3;
@@ -112,7 +106,9 @@ export const VideoPlayer = () => {
           }
           break;
         case WebSocketActionType.BROADCAST_CLIENTS:
-          setGameScore(message.data?.gameScore || 0);
+          if (message.data?.gameScore !== undefined) {
+            setGameScore(message.data?.gameScore || 0);
+          }
           break;
       }
     },
@@ -131,7 +127,7 @@ export const VideoPlayer = () => {
     }
 
     // play the first video by default
-    handleChangeSource(VIDEO_SOURCES[0].src);
+    handleChangeSource(VIDEO_SOURCES[1].src);
 
     document.addEventListener('keyup', handleKeyUp);
     const unsubscribe = subscribeWSMessage(onReceiveWebSocketMessage);
@@ -150,19 +146,21 @@ export const VideoPlayer = () => {
         onDoubleClick={toggleFullscreen}
         ref={sceneElRef}
       >
-        {displayMode === DisplayMode.VIDEO && (
-          <video
-            ref={videoElRef}
-            src="https://storage.googleapis.com/instasync-pics/real.mp4"
-            className="bullet-video aspect-video w-full rounded-md"
-            loop
-            controls
-            muted
-            controlsList="nofullscreen"
+        <video
+          ref={videoElRef}
+          src="https://storage.googleapis.com/instasync-pics/real.mp4"
+          className="bullet-video aspect-video w-full rounded-md"
+          loop
+          controls
+          muted
+          controlsList="nofullscreen"
+        />
+
+        {displayGameScore && (
+          <GameScore
+            gameScore={gameScore}
+            className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-0%] bg-transparent text-white text-[17rem] font-bold"
           />
-        )}
-        {displayMode === DisplayMode.GAME && (
-          <GameScore gameScore={gameScore} className="aspect-video" />
         )}
         <div
           className={`
@@ -195,9 +193,9 @@ export const VideoPlayer = () => {
           <Button
             size="xs"
             variant="secondary"
-            onClick={() => setDisplayMode(DisplayMode.GAME)}
+            onClick={() => setDisplayGameScore((prev) => !prev)}
           >
-            Game
+            Toggle Game
           </Button>
           <Input
             placeholder="Game Score"

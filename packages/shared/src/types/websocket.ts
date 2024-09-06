@@ -3,7 +3,6 @@ export enum WebSocketActionType {
   ADD_COMMENT = "ADD_COMMENT",
   UPDATE_COMMENT = "UPDATE_COMMENT",
   HIDE_SHOW_COMMENT = "HIDE_SHOW_COMMENT",
-  REFRESH_PHOTO_WALL = "REFRESH_PHOTO_WALL",
   SET_DISPLAY_MODE = "SET_DISPLAY_MODE",
   BROADCAST_CLIENTS = "BROADCAST_CLIENTS",
 }
@@ -39,8 +38,14 @@ export interface SetDisplayModeData extends baseData {
   enableModes: RoomMode[];
 }
 
+export interface PhotoWallConfig {
+  doRefresh?: boolean;
+  random?: boolean;
+}
+
 export interface BroadcastClientsData extends baseData {
-  gameScore: number;
+  gameScore?: number;
+  photoWall?: PhotoWallConfig;
 }
 
 export type AddContentMessage = WebSocketMessage<
@@ -63,12 +68,10 @@ export type BroadcastClientMessage = WebSocketMessage<
   WebSocketActionType.BROADCAST_CLIENTS,
   BroadcastClientsData
 >;
-export type RefreshPhotoWallMessage =
-  WebSocketMessage<WebSocketActionType.REFRESH_PHOTO_WALL>;
+
 export type WebSocketMessageData =
   | AddContentMessage
   | UpdateCommentMessage
   | HideShowCommentMessage
   | SetDisplayModeMessage
-  | RefreshPhotoWallMessage
   | BroadcastClientMessage;

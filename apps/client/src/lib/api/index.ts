@@ -58,6 +58,7 @@ export const API_SERVICES = {
       Pick<Comment, 'userId' | 'status' | 'hidden' | 'type'> & {
         size: number;
         sortBy: string;
+        isRandom: boolean;
       }
     >
   ): Promise<Comment[]> => {

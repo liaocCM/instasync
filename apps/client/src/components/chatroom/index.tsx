@@ -16,6 +16,7 @@ import {
 } from '@instasync/shared';
 import { debounce } from '@/lib/utils';
 import { useRateLimiter } from '@/lib/hook';
+import { badWordFilter } from '@/lib/badWordFilter';
 import { API_QUERIES, API_QUERY_KEYS, API_SERVICES } from '@/lib/api';
 import { WELCOME_COMMENT } from '@/lib/constants';
 import { useGlobalStore } from '@/store/globalStore';
@@ -24,6 +25,7 @@ import useWebSocketStore from '@/store/websocketStore';
 import AnimationLoader, { AnimationVariant } from '../AnimationLoader';
 import { ChatroomComment, DisplayComment } from './ChatroomComment';
 import { ColorPicker } from './ColorPicker';
+
 export const Chatroom: React.FC<{
   className?: string;
   prefetchCommentsize?: number;
@@ -86,7 +88,7 @@ export const Chatroom: React.FC<{
           timestamp: comment.createdAt ? +new Date(comment.createdAt) : 0,
           color: comment.color || '',
           photoUrl: comment.photoUrl || '',
-          hidden: false
+          hidden: comment.hidden
         }))
       ]);
     }
@@ -136,7 +138,7 @@ export const Chatroom: React.FC<{
 
     createComment({
       userId: currentUser?.id ?? '',
-      content: inputMessage.trim(),
+      content: badWordFilter.clean(inputMessage.trim()),
       type: CommentType.VIDEO,
       roomId: room?.id ?? '',
       color: selectedColor

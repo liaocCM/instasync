@@ -34,7 +34,7 @@ export const UserTabHeader: React.FC<UserTabHeaderProps> = ({
   const handlePressStart = () => {
     setPressTimer(
       setTimeout(() => {
-        navigate(`/${isAdminMode ? 'guest' : 'admin'}${location.search}`);
+        navigate(`/${isAdminMode ? 'wedding/guest' : 'admin'}${location.search}`);
       }, 3000)
     );
   };

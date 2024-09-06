@@ -41,9 +41,23 @@ export const ConfigDrawer: React.FC<{ children: React.ReactNode }> = ({
         gameScore
       }
     });
-
     toast.success('更新成功', {
       position: 'bottom-center'
+    });
+  };
+
+  const handleUpdatePhotoWallConfig = (
+    doRefresh: boolean = true,
+    random: boolean = false
+  ) => {
+    sendWSMessage({
+      type: WebSocketActionType.BROADCAST_CLIENTS,
+      data: {
+        photoWall: {
+          doRefresh,
+          random
+        }
+      }
     });
   };
 
@@ -67,6 +81,20 @@ export const ConfigDrawer: React.FC<{ children: React.ReactNode }> = ({
               checked={room?.enableModes.includes(RoomMode.PHOTO)}
               onCheckedChange={() => toggleMode(RoomMode.PHOTO)}
             />
+            <Button
+              size="xs"
+              variant="outline"
+              onClick={() => handleUpdatePhotoWallConfig()}
+            >
+              預設模式
+            </Button>
+            <Button
+              size="xs"
+              variant="outline"
+              onClick={() => handleUpdatePhotoWallConfig(true, true)}
+            >
+              隨機模式
+            </Button>
           </div>
           <div className="flex items-center gap-2">
             <div className="whitespace-nowrap">遊戲分數: </div>

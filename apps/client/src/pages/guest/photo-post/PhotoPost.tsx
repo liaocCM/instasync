@@ -25,7 +25,10 @@ export const PhotoPost: React.FC<{ className?: string }> = ({
 }) => {
   const uiRoomMode = useGlobalStore((state) => state.uiRoomMode);
   const { data: serverRoom } = API_QUERIES.useGetDefaultRoom();
-  const currentUser = useUserStore((state) => state.user);
+  const { currentUser, isUserAdmin } = useUserStore((state) => ({
+    currentUser: state.user,
+    isUserAdmin: state.computed.isAdmin
+  }));
 
   const { data: comments, isLoading } = useQuery({
     queryKey: API_QUERY_KEYS.comment.filter({
@@ -36,8 +39,9 @@ export const PhotoPost: React.FC<{ className?: string }> = ({
       API_SERVICES.getComments({
         userId: currentUser?.id || '',
         type: CommentType.PHOTO,
-        sortBy: 'createAt:desc'
-      })
+        sortBy: 'createdAt:desc'
+      }),
+    refetchInterval: 10000
   });
 
   // must return null if not in photo mode because swiperjs requires DOM elements to do calculations
@@ -88,7 +92,7 @@ export const PhotoPost: React.FC<{ className?: string }> = ({
               >
                 {comments?.map((comment) => (
                   <SwiperSlide key={comment.id}>
-                    <CommentCard {...comment} />
+                    <CommentCard comment={comment} size="sm" />
                   </SwiperSlide>
                 ))}
               </Swiper>
@@ -117,7 +121,12 @@ export const PhotoPost: React.FC<{ className?: string }> = ({
 
       <div className="p-3 w-full text-center animate-ripple">
         <EditPhotoPostDrawer>
-          <Button className="w-[75%] h-9">上傳照片</Button>
+          <Button
+            className="w-[75%] h-9"
+            variant={isUserAdmin ? 'default' : 'secondary'}
+          >
+            上傳照片
+          </Button>
         </EditPhotoPostDrawer>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 export const useFullscreen = (
-  elementRef: React.RefObject<HTMLElement>,
+  elementRef?: React.RefObject<HTMLElement>,
   onToggle?: () => void,
   useParentNode: boolean = false
 ) => {
@@ -19,6 +19,7 @@ export const useFullscreen = (
   };
 
   const toggleFullscreen = async () => {
+    if (!elementRef) return;
     const elem = (
       useParentNode ? elementRef.current?.parentNode : elementRef.current
     ) as HTMLElement;

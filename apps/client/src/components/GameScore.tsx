@@ -6,6 +6,7 @@ const GameScore = ({
   gameScore
 }: {
   className?: string;
+  scoreClassName?: string;
   gameScore: number;
 }) => {
   const gameScoreRef = useRef<HTMLHeadingElement>(null);
@@ -17,7 +18,7 @@ const GameScore = ({
       setTimeout(() => {
         gameScoreRef.current?.style.setProperty(
           '--duration',
-          `${Math.random() * 4 + 1}s`
+          `${Math.random() * 3 + 1}s`
         );
         gameScoreRef.current?.style.setProperty('--num', gameScore.toString());
       }, 1000);
@@ -25,16 +26,12 @@ const GameScore = ({
   }, [gameScore]);
 
   return (
-    <div
-      className={cn('flex items-center justify-center aspect-video', className)}
-    >
-      <h1
-        ref={gameScoreRef}
-        id="game-score"
-        className="text-[30rem] font-bold text-primary"
-        data-num={gameScore}
-      ></h1>
-    </div>
+    <h1
+      ref={gameScoreRef}
+      id="game-score"
+      className={cn('font-bold', className)}
+      data-num={gameScore}
+    ></h1>
   );
 };
 

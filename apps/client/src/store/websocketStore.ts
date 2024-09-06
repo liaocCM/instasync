@@ -8,11 +8,11 @@ interface WebSocketStore {
   socket: WebSocket | null;
   isConnected: boolean;
   messageListeners: ((message: WebSocketMessageData) => void)[];
+  pingInterval: number | null;
   connect: (url?: string) => Promise<void>;
   disconnect: () => void;
   sendMessage: (message: string | WebSocketMessageData) => void;
   subscribe: (listener: (message: WebSocketMessageData) => void) => () => void;
-  pingInterval: number | null;
   startPinging: () => void;
   stopPinging: () => void;
 }
@@ -35,6 +35,9 @@ const websocketUrl =
     ? `wss://${location.host}/websocket/`
     : import.meta.env.VITE_WS_URL;
 
+let shouldReconnect = false;
+
+
 const useWebSocketStore = create<WebSocketStore>((set, get) => ({
   socket: null,
   isConnecting: false,
@@ -44,12 +47,14 @@ const useWebSocketStore = create<WebSocketStore>((set, get) => ({
 
   connect: (userToken = '') => {
     get().disconnect();
+
     return new Promise<void>((resolve, reject) => {
       const socket = new WebSocket(`${websocketUrl}?token=${userToken}`);
-
+  
       socket.onopen = () => {
         console.log('WebSocket connected');
         set({ isConnected: true, socket });
+        shouldReconnect = true;
         // get().startPinging();
         resolve();
       };
@@ -57,9 +62,10 @@ const useWebSocketStore = create<WebSocketStore>((set, get) => ({
       socket.onclose = () => {
         console.log('WebSocket disconnected');
         set({ isConnected: false }); // socket: null
-
-        console.log('WebSocket reconnecting');
-        get().connect(userToken);
+        if (shouldReconnect) {
+          console.log('WebSocket reconnecting');
+          get().connect(userToken);
+        }
       };
 
       socket.onerror = (error) => {
@@ -94,6 +100,7 @@ const useWebSocketStore = create<WebSocketStore>((set, get) => ({
     const { socket } = get();
     // stopPinging();
     if (socket) {
+      shouldReconnect = false;
       socket.close();
     }
   },

@@ -49,5 +49,6 @@ export const getHashNumber = (input: string, max: number): number => {
 };
 
 export const getUserDefaultAvatarUrl = (id: string) => {
+  if (!id) return '';
   return `/images/avatar/variant-${getHashNumber(id, 5)}.png`;
 };

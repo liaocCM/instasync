@@ -7,6 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger
 } from '@instasync/ui/ui/popover';
+import { toast } from '@instasync/ui/ui/sonner';
 import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { Ban, EyeOff } from 'lucide-react';
@@ -43,12 +44,13 @@ export const ChatroomComment: React.FC<{
   });
 
   const handleHideComment = () => {
-    console.log('hide');
     updateComment({ hidden: true });
+    toast.success(`已隱藏訊息`);
   };
 
-  const handleBanUser = () => {
-    console.log('ban');
+  const handleBanUser = async () => {
+    await API_SERVICES.updateUser(comment.userId, { banned: true });
+    toast.success(`已封鎖使用者 ${comment.username}`);
   };
 
   const Comment = () => (

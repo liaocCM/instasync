@@ -20,8 +20,9 @@ export const getComments = async (
       status,
       type,
       hidden,
-      size,
+      size = 20,
       sortBy = "createdAt:asc",
+      isRandom = false,
     } = req.query;
 
     const filters = {
@@ -30,6 +31,7 @@ export const getComments = async (
       ...(type !== undefined && { type: type as RoomMode }),
       ...(hidden !== undefined && { hidden: hidden === "true" }),
       ...(size !== undefined && { size: Number(size) }),
+      ...(isRandom !== undefined && { isRandom: isRandom === "true" }),
     };
 
     const comments = await commentService.getAllComments(filters);
@@ -86,6 +88,9 @@ export const createComment = async (
     const user = await userService.getUserById(userId);
     if (!user) {
       throw new APIError(404, "User not found");
+    }
+    if (user.banned) {
+      throw new APIError(403, "帳號已被停權");
     }
 
     if (req.file) {

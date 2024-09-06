@@ -20,16 +20,13 @@ const AnimationLoader = ({
   return (
     <div className={cn('flex-1 flex items-center', className)}>
       <div className="pt-3 border-2 shadow-md border-gray-300 rounded-lg mx-auto w-[70%] flex flex-col items-center">
-        <div className="text-sm text-gray-500 leading-normal">
+        <div className="text-sm text-gray-500 leading-normal text-center">
           {words.map((word, index) => (
-            <>
-              <span key={word}>{word}</span>
+            <div key={word}>
+              <span>{word}</span>
               {index < words.length - 1 && <br />}
-            </>
+            </div>
           ))}
-          {/* 祝福牆還沒開放哦
-          <br />
-          晚點再過來看看吧！ */}
         </div>
         <div
           className={

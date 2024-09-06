@@ -49,7 +49,7 @@ export const PhotoPost: React.FC<{ className?: string }> = ({
     return (
       <AnimationLoader
         variant={AnimationVariant.HEART}
-        words={['祝福牆還沒開放哦', '晚點再過來看看吧！']}
+        words={['祝福牆還沒開放哦', '晚點再過來看看吧!']}
       />
     );
   }

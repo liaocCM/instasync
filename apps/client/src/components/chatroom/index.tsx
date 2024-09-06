@@ -94,11 +94,14 @@ export const Chatroom: React.FC<{
   }, [prevComments]);
 
   const scrollToBottom = () => {
-    setTimeout(() =>
-      chatContainerRef.current?.scrollTo({
-        top: chatContainerRef.current.scrollHeight,
-        behavior: 'smooth'
-      }), 200);
+    setTimeout(
+      () =>
+        chatContainerRef.current?.scrollTo({
+          top: chatContainerRef.current.scrollHeight,
+          behavior: 'smooth'
+        }),
+      200
+    );
   };
 
   const handleSendMessage = (
@@ -252,7 +255,7 @@ export const Chatroom: React.FC<{
     return (
       <AnimationLoader
         variant={AnimationVariant.DOG}
-        words={['聊天室還沒開放哦', '晚點再過來看看吧！']}
+        words={['聊天室暫時關閉', '晚點再過來看看吧!']}
       />
     );
   }

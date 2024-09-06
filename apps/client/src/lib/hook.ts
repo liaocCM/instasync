@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export const useFullscreen = (
   elementRef: React.RefObject<HTMLElement>,
@@ -79,7 +79,7 @@ export const useFullscreen = (
  * @returns function to check if the limit is exceeded
  */
 export const useRateLimiter = (limit: number, interval: number) => {
-  const [count, setCount] = useState(0);
+  const countRef = useRef(0);
   // Set initial time to 1970-01-01 to ensure the first check is true
   const [lastResetTime, setLastResetTime] = useState(
     new Date('1970-01-01').getTime()
@@ -88,15 +88,14 @@ export const useRateLimiter = (limit: number, interval: number) => {
   const checkRateLimit = () => {
     const now = Date.now();
     if (now - lastResetTime >= interval) {
-      setCount(0);
+      countRef.current = 0;
       setLastResetTime(now);
     }
 
-    if (count >= limit) {
+    if (countRef.current >= limit) {
       return false;
     }
-
-    setCount(count + 1);
+    countRef.current += 1;
     return true;
   };
 

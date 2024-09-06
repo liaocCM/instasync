@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Bullet } from '@instasync/bulletjs';
 import { Button } from '@instasync/ui/ui/button';
 import { Card } from '@instasync/ui/ui/card';
-import { Separator } from '@instasync/ui/ui/separator';
 import { useFullscreen } from '@/lib/hook';
 import useWebSocketStore from '@/store/websocketStore';
 import {
@@ -63,9 +62,6 @@ export const VideoPlayer = () => {
       videoElRef.current.src = src;
       // videoElRef.current.load();
       videoElRef.current.play();
-      // .catch((error) => {
-      //   console.error('Error playing video:', error);
-      // });
     }
   };
 

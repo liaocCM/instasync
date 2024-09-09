@@ -41,7 +41,7 @@ export const PhotoPost: React.FC<{ className?: string }> = ({
         type: CommentType.PHOTO,
         sortBy: 'createdAt:desc'
       }),
-    refetchInterval: 10000
+    refetchInterval: 60 * 1000
   });
 
   // must return null if not in photo mode because swiperjs requires DOM elements to do calculations

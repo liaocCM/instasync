@@ -16,7 +16,7 @@ export const QrcodeBlock: React.FC<{
       style={{ color }}
     >
       <QRCodeSVG width={'100%'} height={'100%'} fgColor={color} value={value} />
-      <div className="mt-1">掃描留言</div>
+      <div className="mt-1 whitespace-nowrap text-sm">掃描留言</div>
     </div>
   );
 };

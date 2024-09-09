@@ -168,7 +168,7 @@ export const VideoPlayer = () => {
           ref={screenElRef}
         ></div>
         <QrcodeBlock
-          className="absolute bottom-8 right-8 w-[6rem]"
+          className="absolute bottom-4 right-4 w-[5rem]"
           value={`${location.origin}/wedding/guest?mode=video`}
           color="hsl(var(--secondary))"
         />

@@ -46,12 +46,12 @@ export const CommentCard: React.FC<{
       const contentWidth = calculateNameWidth(content || '');
 
       // Base font size in pixels (assuming 16px as the browser default)
-      const baseFontSize = size === 'sm' ? 4 : 6;
+      const baseFontSize = size === 'sm' ? 6 : 8;
 
       // Calculate fontSize in rem, clamped between 0.875rem (14px) and 1.5rem (24px)
       const fontSize = Math.max(
-        size === 'sm' ? 1.1 : 1.2,
-        Math.min(2, containerWidth / contentWidth / baseFontSize)
+        size === 'sm' ? 1.1 : 0.9,
+        Math.min(1.8, containerWidth / contentWidth / baseFontSize)
       );
 
       // console.log('content width', containerWidth);
@@ -119,7 +119,7 @@ export const CommentCard: React.FC<{
         <div
           ref={contentRef}
           className={cn(
-            'max-h-[100%] top-[50%] relative translate-y-[-50%] overflow-hidden mx-[2%] p-[1%] whitespace-pre-wrap',
+            'max-h-[100%] top-[50%] relative translate-y-[-50%] overflow-hidden mx-[2%] p-[1%] whitespace-pre-wrap leading-2',
             photoUrl ? 'text-xl two-line-overflow-ellipsis' : 'text-3xl',
             // photoUrl && content.length >= 20 && 'text-lg',
             'whitespace-pre-wrap'

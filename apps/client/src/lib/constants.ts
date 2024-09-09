@@ -24,7 +24,7 @@ export const _SYSTEM_DEFAULT_COMMENTS: Comment[] = [
     userId: 'cm0g3vxni0000ogy89ryjft3t',
     roomId: 'cm0g3vz5g0008ogy854555555',
     content:
-      '不管是塵封已久的老照片，還是今天才拍攝的照片\n我們都由衷希望你可以與我們分享',
+      '不管是塵封已久的老照片，還是今天的新照片\n都由衷地希望你可以與我們分享',
     photoUrl:
       'https://storage.googleapis.com/instasync-pics/photo-wall/default/aibrq-1724985726603.png',
     type: CommentType.PHOTO,
@@ -43,7 +43,7 @@ export const _SYSTEM_DEFAULT_COMMENTS: Comment[] = [
     userId: 'cm0g3vxni0000ogy89ryjft3t',
     roomId: 'cm0g3vz5g0008ogy854555555',
     content:
-      '大家上傳的內容我會仔細把關\n嚴厲斥責某些過不了審核的照片，並擇日公之於眾:D',
+      '大家上傳的內容我會仔細把關\n嚴厲斥責過不了審核的照片!',
     photoUrl:
       'https://storage.googleapis.com/instasync-pics/photo-wall/default/6s99mn-1724985768781.png',
     type: CommentType.PHOTO,
@@ -81,7 +81,7 @@ export const _SYSTEM_DEFAULT_COMMENTS: Comment[] = [
     userId: 'cm0g3vxni0000ogy89ryjft3t',
     roomId: 'cm0g3vz5g0008ogy854555555',
     content:
-      '最後請大家在享用餐點的同時\n也好好欣賞在座的親朋好友上傳的照片囉！',
+      '請大家在享用餐點的同時\n也好好欣賞在座的親朋好友上傳的照片哦！',
     photoUrl:
       'https://storage.googleapis.com/instasync-pics/photo-wall/default/u1o98-1724985646042.png',
     type: CommentType.PHOTO,

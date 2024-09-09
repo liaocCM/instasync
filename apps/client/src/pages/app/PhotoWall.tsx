@@ -164,7 +164,7 @@ export const PhotoWall = () => {
         </Swiper>
 
         <QrcodeBlock
-          className="absolute bottom-2 right-2 w-[6rem]"
+          className="absolute bottom-1 right-1 w-[4rem]"
           value={`${location.origin}/wedding/guest?mode=photo`}
           color="hsl(var(--secondary))"
         />

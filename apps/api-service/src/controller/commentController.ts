@@ -1,14 +1,13 @@
-import { Request, Response, NextFunction } from "express";
-import * as commentService from "../service/commentService";
-import * as roomService from "../service/roomService";
-import { RoomMode, CommentStatus, UserRole } from "../types";
 import fs from "fs/promises";
 import path from "path";
-import { uploadFileAndGetUrl } from "../utils";
-// import { sendWSMessage } from "../websocket";
+import { Request, Response, NextFunction } from "express";
 import { CommentType, WebSocketActionType } from "@instasync/shared";
 import { pubWSMessage } from "@/config/redis";
-
+import { RoomMode, CommentStatus, UserRole, APIError } from "@/types";
+import { uploadFileAndGetUrl } from "@/utils";
+import * as commentService from "../service/commentService";
+import * as roomService from "../service/roomService";
+import * as userService from "../service/userService";
 
 export const getComments = async (
   req: Request,
@@ -21,8 +20,9 @@ export const getComments = async (
       status,
       type,
       hidden,
-      size,
+      size = 20,
       sortBy = "createdAt:asc",
+      isRandom = false,
     } = req.query;
 
     const filters = {
@@ -31,6 +31,7 @@ export const getComments = async (
       ...(type !== undefined && { type: type as RoomMode }),
       ...(hidden !== undefined && { hidden: hidden === "true" }),
       ...(size !== undefined && { size: Number(size) }),
+      ...(isRandom !== undefined && { isRandom: isRandom === "true" }),
     };
 
     const comments = await commentService.getAllComments(filters);
@@ -77,14 +78,24 @@ export const createComment = async (
   next: NextFunction
 ) => {
   try {
-    const { userId, roomId, content, type, status } = req.body;
+    const { userId, roomId, content, type, status, color } = req.body;
     let photoUrl = "";
-    const defaultRooms = await roomService.getAllRooms({ isDefault: true });
+
+    const room = await roomService.getRoomById(roomId);
+    if (!room) {
+      throw new APIError(404, "Room not found");
+    }
+    const user = await userService.getUserById(userId);
+    if (!user) {
+      throw new APIError(404, "User not found");
+    }
+    if (user.banned) {
+      throw new APIError(403, "帳號已被停權");
+    }
 
     if (req.file) {
       photoUrl = await uploadFileAndGetUrl(req.file, "photo-wall/original");
     }
-
     // Create comment
     const createdComment = await commentService.createComment({
       userId,
@@ -92,10 +103,11 @@ export const createComment = async (
       content,
       photoUrl,
       type,
+      color,
       // status: CommentStatus.APPROVED,
       status:
         status ||
-        (type === RoomMode.PHOTO && defaultRooms[0].requiresModeration
+        (type === RoomMode.PHOTO && room.requiresModeration
           ? CommentStatus.PENDING
           : CommentStatus.APPROVED),
     });
@@ -111,6 +123,7 @@ export const createComment = async (
           content: createdComment.content,
           photoUrl: createdComment.photoUrl || "",
           hidden: createdComment.hidden,
+          color: createdComment.color,
           timestamp: Date.now(),
         },
       },
@@ -140,7 +153,7 @@ export const updateComment = async (
     const commentId = req.params.id;
     const comment = await commentService.getCommentById(commentId);
     if (!comment) {
-      return res.status(404).json({ message: "Comment not found" });
+      throw new APIError(404, "Comment not found");
     }
 
     const updatedComment = await commentService.updateComment(

@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "docker:client": "docker buildx build --platform linux/amd64 -t asia-east1-docker.pkg.dev/instasync-433709/instasync-docker/instasync-client:latest -f apps/client/Dockerfile .",
-    "docker:api": "docker buildx build --platform linux/amd64 -t asia-east1-docker.pkg.dev/instasync-433709/instasync-docker/instasync-api:latest -f apps/api-service/Dockerfile .",
-    "docker:websocket": "docker buildx build --platform linux/amd64 -t asia-east1-docker.pkg.dev/instasync-433709/instasync-docker/instasync-websocket:latest -f apps/websocket-service/Dockerfile .",
+    "docker:client": "docker buildx build --platform linux/amd64 -t asia-east1-docker.pkg.dev/instasync-433709/instasync-docker/instasync-client:${TAG:-latest} -f apps/client/Dockerfile .",
+    "docker:api": "docker buildx build --platform linux/amd64 -t asia-east1-docker.pkg.dev/instasync-433709/instasync-docker/instasync-api:${TAG:-latest} -f apps/api-service/Dockerfile .",
+    "docker:websocket": "docker buildx build --platform linux/amd64 -t asia-east1-docker.pkg.dev/instasync-433709/instasync-docker/instasync-websocket:${TAG:-latest} -f apps/websocket-service/Dockerfile .",
     "docker:client:run": "docker run -d --network=dev --name instasync-client -p 80:80 instasync-client",
     "docker:api:run": "docker run -d --network=dev --name instasync-api -p 6004:6004 instasync-api",
     "docker:websocket:run": "docker run -d --network=dev --name instasync-websocket -p 6005:6005 instasync-websocket",

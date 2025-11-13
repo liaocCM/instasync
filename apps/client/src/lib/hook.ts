@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export const useFullscreen = (
-  elementRef: React.RefObject<HTMLElement>,
+  elementRef?: React.RefObject<HTMLElement>,
   onToggle?: () => void,
   useParentNode: boolean = false
 ) => {
@@ -19,6 +19,7 @@ export const useFullscreen = (
   };
 
   const toggleFullscreen = async () => {
+    if (!elementRef) return;
     const elem = (
       useParentNode ? elementRef.current?.parentNode : elementRef.current
     ) as HTMLElement;
@@ -70,4 +71,34 @@ export const useFullscreen = (
   }, []);
 
   return { isFullscreen, toggleFullscreen };
+};
+
+/**
+ * Rate Limiter
+ * @param limit limit count
+ * @param interval limit interval (ms)
+ * @returns function to check if the limit is exceeded
+ */
+export const useRateLimiter = (limit: number, interval: number) => {
+  const countRef = useRef(0);
+  // Set initial time to 1970-01-01 to ensure the first check is true
+  const [lastResetTime, setLastResetTime] = useState(
+    new Date('1970-01-01').getTime()
+  );
+
+  const checkRateLimit = () => {
+    const now = Date.now();
+    if (now - lastResetTime >= interval) {
+      countRef.current = 0;
+      setLastResetTime(now);
+    }
+
+    if (countRef.current >= limit) {
+      return false;
+    }
+    countRef.current += 1;
+    return true;
+  };
+
+  return checkRateLimit;
 };

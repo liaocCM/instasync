@@ -1,4 +1,6 @@
-import { RoomMode, PrismaClient } from "@prisma/client";
+import { RoomMode } from "@/types";
+import { PrismaClient } from "@prisma/client";
+
 const prisma = new PrismaClient();
 
 export const initializePrisma = async () => {
@@ -12,7 +14,7 @@ export const initializePrisma = async () => {
   if (!defaultRoom) {
     await prisma.room.create({
       data: {
-        mode: RoomMode.VIDEO,
+        enableModes: [RoomMode.VIDEO],
         isDefault: true,
         requiresModeration: true,
       },

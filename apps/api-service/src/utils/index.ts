@@ -1,5 +1,5 @@
 import fs from "fs/promises";
-import { uploadGoogleFile } from "@/config/googleSettings";
+import { uploadGoogleFile } from "@/config/GCPSettings";
 
 export const uploadFileAndGetUrl = async (
   file: Express.Multer.File,

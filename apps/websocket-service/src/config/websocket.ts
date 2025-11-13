@@ -2,7 +2,7 @@ import WebSocket from "ws";
 import jwt from "jsonwebtoken";
 import { IncomingMessage } from "http";
 import { Server as HttpServer } from "http";
-import { WebSocketMessageData } from "@instasync/shared";
+import { WebSocketActionType, WebSocketMessageData } from "@instasync/shared";
 import { UserRole } from "@instasync/shared";
 
 export let wss: WebSocket.Server;
@@ -64,6 +64,15 @@ function handleMessage(ws: WebSocket, message: string) {
 
   if (message.toString() === "PING") {
     ws.send("PONG");
+  }
+
+  try {
+    const messageData = JSON.parse(message) as WebSocketMessageData;
+    if (messageData.type === WebSocketActionType.BROADCAST_CLIENTS) {
+      sendWSMessage(messageData, UserRole.ADMIN);
+    }
+  } catch (error) {
+    console.error("Error parsing message:", error);
   }
 }
 

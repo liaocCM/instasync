@@ -1,20 +1,21 @@
 import { Request, Response, NextFunction } from "express";
 import * as userService from "../service/userService";
+import { APIError } from "@/types";
 
-const parseJsonFields = (obj: any, fields: string[]) => {
-  const parsedObj = { ...obj };
-  fields.forEach((field) => {
-    if (typeof parsedObj[field] === "string") {
-      try {
-        parsedObj[field] = JSON.parse(parsedObj[field]);
-      } catch (error) {
-        console.error(`Error parsing ${field}:`, error);
-        parsedObj[field] = [];
-      }
-    }
-  });
-  return parsedObj;
-};
+// const parseJsonFields = (obj: any, fields: string[]) => {
+//   const parsedObj = { ...obj };
+//   fields.forEach((field) => {
+//     if (typeof parsedObj[field] === "string") {
+//       try {
+//         parsedObj[field] = JSON.parse(parsedObj[field]);
+//       } catch (error) {
+//         console.error(`Error parsing ${field}:`, error);
+//         parsedObj[field] = [];
+//       }
+//     }
+//   });
+//   return parsedObj;
+// };
 
 export const getAllUsers = async (
   _: Request,
@@ -23,7 +24,8 @@ export const getAllUsers = async (
 ) => {
   try {
     const users = await userService.getAllUsers();
-    res.json(users.map((user) => parseJsonFields(user, ["roles"])));
+    // res.json(users.map((user) => parseJsonFields(user, ["roles"])));
+    res.json(users);
   } catch (error) {
     next(error);
   }
@@ -37,7 +39,8 @@ export const getUserById = async (
   try {
     const { id } = req.params;
     const user = await userService.getUserById(id);
-    res.json(parseJsonFields(user, ["roles"]));
+    // res.json(parseJsonFields(user, ["roles"]));
+    res.json(user);
   } catch (error) {
     next(error);
   }
@@ -54,9 +57,10 @@ export const createUser = async (
       name,
       profilePicture,
       banned,
-      roles,
+      roles: roles || [],
     });
-    res.status(201).json(parseJsonFields(newUser, ["roles"]));
+    // res.status(201).json(parseJsonFields(newUser, ["roles"]));
+    res.status(201).json(newUser);
   } catch (error) {
     next(error);
   }
@@ -73,7 +77,7 @@ export const updateUser = async (
 
     const user = await userService.getUserById(id);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      throw new APIError(404, "User not found");
     }
 
     const updatedUser = await userService.updateUser(id, {
@@ -90,17 +94,13 @@ export const updateUser = async (
         // update comments status of the user
         // force update the player clent
       } else {
-        
       }
     }
 
-    res.json(parseJsonFields(updatedUser, ["roles"]));
+    // res.json(parseJsonFields(updatedUser, ["roles"]));
+    res.json(updatedUser);
   } catch (error) {
-    if (error instanceof Error && error.message === "User not found") {
-      res.status(404).json({ message: "User not found" });
-    } else {
-      next(error);
-    }
+    next(error);
   }
 };
 

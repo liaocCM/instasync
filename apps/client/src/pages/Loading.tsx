@@ -9,7 +9,7 @@ export const Loading: React.FC = () => {
 
   return (
     <div
-      className="fixed inset-0 w-full h-dvh-app flex items-center justify-center text-xl text-primary z-50 font-bold"
+      className="fixed text-secondary inset-0 w-full h-dvh-app flex items-center justify-center text-xl z-50 font-bold"
       style={{
         backgroundImage: `url(${backgroundImage})`,
         backgroundSize: 'cover',

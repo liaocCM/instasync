@@ -12,10 +12,10 @@ export const DisplayApp: React.FC = () => {
   }));
 
   return (
-    <div className="flex flex-col gap-2 h-full">
+    <div className="flex flex-col gap-3 h-full">
       <UserTabHeader isAdminMode />
 
-      <div className="w-full flex-1 flex flex-col items-center justify-center">
+      <div className="w-full flex-1 flex flex-col items-center">
         {uiRoomMode === RoomMode.PHOTO && <PhotoWall />}
         {uiRoomMode === RoomMode.VIDEO && <VideoPlayer />}
       </div>

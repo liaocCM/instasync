@@ -117,6 +117,14 @@ export const ProtectedAuthRoute = () => {
   );
 
   const handleCreateUser = async () => {
+    if (username.trim().length === 0) {
+      toast.error('暱稱不可為空');
+      return;
+    }
+    if (username.trim().length > 10) {
+      toast.error('暱稱最多10個字');
+      return;
+    }
     setGlobalLoading(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 300));
@@ -158,7 +166,7 @@ export const ProtectedAuthRoute = () => {
               <div className="flex flex-row gap-4">
                 <Input
                   placeholder="暱稱"
-                  className="h-9"
+                  className="h-9 focus-visible:ring-secondary"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   onKeyDown={(e) => {
@@ -169,21 +177,17 @@ export const ProtectedAuthRoute = () => {
                 />
                 <Button
                   size="sm"
+                  variant="secondary"
                   onClick={handleCreateUser}
-                  disabled={!username}
+                  disabled={!username || username.trim().length > 10}
                 >
                   確定
                 </Button>
               </div>
               <div className="font-medium text-destructive text-sm h-[10px] text-left mt-2">
-                {username.length > 0 &&
-                  (username.length < 2 || username.length > 10) &&
-                  '暱稱需介於2-10個字'}
+                {username.length > 10 && '暱稱最多10個字'}
               </div>
             </CardContent>
-            {/* <CardFooter className="flex justify-center">
-                <Button size="sm" onClick={handleCreateUser} disabled={!nickname}>確定</Button>
-            </CardFooter> */}
           </Card>
           <Footer />
         </div>

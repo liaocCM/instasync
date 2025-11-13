@@ -1,16 +1,16 @@
-import { API_QUERY_KEYS, API_SERVICES } from '@/lib/api';
+import { API_QUERIES, API_QUERY_KEYS, API_SERVICES } from '@/lib/api';
 import { useGlobalStore } from '@/store/globalStore';
 import { useUserStore } from '@/store/userStore';
 import useWebSocketStore from '@/store/websocketStore';
-import { RoomMode } from '@instasync/shared';
+import { RoomMode, WebSocketActionType } from '@instasync/shared';
 import { toast } from '@instasync/ui/ui/sonner';
-// import { Tabs, TabsList, TabsTrigger } from '@instasync/ui/ui/tabs';
-import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { Loading } from './Loading';
+import { useQueryClient } from '@tanstack/react-query';
 
+// import { Tabs, TabsList, TabsTrigger } from '@instasync/ui/ui/tabs';
 // type TabValue = 'video' | 'photo';
 // export function DisplayLayout() {
 //   const location = useLocation();
@@ -56,28 +56,24 @@ export function AppLayout() {
       subscribeWSMessage: state.subscribe
     }))
   );
-
-  const { setState, setGlobalLoading } = useGlobalStore(
+  const queryClient = useQueryClient();
+  const { setState } = useGlobalStore(
     useShallow((state) => ({
-      setState: state.setState,
-      setGlobalLoading: state.setLoading
+      setState: state.setState
     }))
   );
 
-  const { data: room, isLoading } = useQuery({
-    queryKey: [...API_QUERY_KEYS.room.default()],
-    queryFn: API_SERVICES.getDefaultRoom
-  });
+  const { data: room, isLoading } = API_QUERIES.useGetDefaultRoom();
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
 
     const roomMode =
       (urlParams.get('mode')?.toUpperCase() as RoomMode) ||
-      room?.mode ||
+      room?.enableModes[0] ||
       RoomMode.VIDEO;
 
-    setState({ uiRoomMode: roomMode, room: room });
+    setState({ uiRoomMode: roomMode });
   }, [room]);
 
   useEffect(() => {
@@ -99,7 +95,11 @@ export function AppLayout() {
 
   useEffect(() => {
     const unsubscribe = subscribeWSMessage((message) => {
-      console.log('Received message:', message);
+      if (message.type === WebSocketActionType.SET_DISPLAY_MODE) {
+        queryClient.invalidateQueries({
+          queryKey: API_QUERY_KEYS.room.default()
+        });
+      }
     });
     return () => unsubscribe();
   }, [subscribeWSMessage]);

@@ -16,7 +16,6 @@ export const useUserStore = create<UserStore>()(
   persist(
     (set, get) => ({
       user: undefined,
-      isAdmin: false,
       computed: {
         get isAuthenticated() {
           return !!get().user?.token;

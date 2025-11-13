@@ -1,3 +1,4 @@
+import { APIError } from "@/types";
 import { Request, Response, NextFunction } from "express";
 
 export const errorHandler = (
@@ -6,6 +7,11 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  console.error(err.stack);
-  res.status(500).send("Internal Server Error");
+  console.error(err);
+
+  if (err instanceof APIError) {
+    return res.status(err.statusCode).json({ message: err.message });
+  }
+
+  res.status(500).json({ message: "Internal Server Error" });
 };

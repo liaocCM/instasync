@@ -1,3 +1,10 @@
+/**
+ * -- DEPRECATED --
+ *
+ * Websocket is now handled in websocket-service and communication is done via Redis pub/sub
+ * [api-service] --pub--> [redis] --sub--> [websocket-service]
+ */
+
 import { Server as HttpServer } from "http";
 import WebSocket from "ws";
 import { WebSocketMessageData } from "@instasync/shared";

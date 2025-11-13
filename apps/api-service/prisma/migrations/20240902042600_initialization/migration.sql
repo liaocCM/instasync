@@ -5,7 +5,7 @@ CREATE TYPE "CommentStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 CREATE TYPE "CommentType" AS ENUM ('VIDEO', 'PHOTO');
 
 -- CreateEnum
-CREATE TYPE "RoomMode" AS ENUM ('VIDEO', 'PHOTO', 'MIXED');
+CREATE TYPE "RoomMode" AS ENUM ('VIDEO', 'PHOTO');
 
 -- CreateTable
 CREATE TABLE "users" (

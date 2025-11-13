@@ -31,7 +31,7 @@ export interface IComment {
 
 export interface IRoom {
   id: string;
-  mode: RoomMode;
+  enableModes: RoomMode[];
   isDefault: boolean;
   requiresModeration: boolean;
   createdAt: Date;
@@ -51,4 +51,18 @@ export enum CommentStatus {
   PENDING = "PENDING",
   APPROVED = "APPROVED",
   REJECTED = "REJECTED",
+}
+
+export class APIError extends Error {
+  statusCode: number;
+
+  /**
+   * @param statusCode - The HTTP status code to send in the response
+   * @param message - The error message to send in the response. This should be a user-friendly message, as it may be displayed to the user on the client side.
+   */
+  constructor(statusCode: number, message: string) {
+    super(message);
+    this.statusCode = statusCode;
+    Object.setPrototypeOf(this, APIError.prototype);
+  }
 }
